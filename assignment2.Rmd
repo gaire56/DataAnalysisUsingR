@@ -1,0 +1,77 @@
+---
+title: "DA2 Homework Assignment 02 - Logistic Regression Analysis"
+author: Gaire Ananta Prasad M24W0272
+output: html_document
+editor_options: 
+  markdown: 
+  wrap: sentence
+---
+  
+```{r load-data}
+data(mtcars)
+
+```
+
+```{r}
+head(mtcars)
+```
+```{r}
+tail(mtcars)
+```
+M24W0272 Gaire Ananta Prasad.   The dataset above has information about different car models, from small cars like the Mazda RX4 to sports cars like the Porsche 914-2 and luxury cars like the Volvo 142E. Each row shows details about a car, such as fuel efficiency, performance, and engine features.
+
+
+```{r}
+mtcars$high_mpg <- ifelse(mtcars$mpg > median(mtcars$mpg), 1, 0)
+model <- glm(high_mpg ~ cyl, data = mtcars, family = binomial)
+summary(model)
+```
+M24W0272 Gaire Ananta Prasad  The analysis looks at whether the number of cylinders in a car affects how likely it is to have good fuel efficiency (meaning mpg above the average). The results show that neither the starting value (intercept) nor the number of cylinders are strong predictors of good fuel efficiency. This is because both have large p-values. The model’s fit to the data is shown by a residual deviance of 9.5607 with 30 degrees of freedom and an AIC of 13.561. Even after trying 20 times, the model does not show a strong link between the number of cylinders and fuel efficiency.
+
+```{r}
+plot(mtcars$cyl, mtcars$high_mpg, col = mtcars$high_mpg + 1, pch = 19)
+abline(h = 0.5, col = "red")
+curve(predict(model, data.frame(cyl = x), type = "response"), add = TRUE, col = "blue")
+legend("topright", legend = c("Low MPG", "High MPG"), col = 0:1, pch = 19)
+```
+M24W0272 Gaire Ananta Prasad  The plot shows cars as dots on a graph. Blue dots mean the car has good fuel efficiency, and black dots mean it doesn’t. There’s a red line in the middle, and a blue line that shows the chance of having good fuel efficiency based on the number of cylinders. However, the number of cylinders alone doesn’t seem like a good way to predict fuel efficiency. There aren’t many cars with a lot of cylinders, so it’s hard to be sure about those. Overall, the graph gives a general idea, but it’s not very accurate for making predictions.
+
+```{r}
+residuals <- residuals(model)
+residuals
+```
+M24W0272 Gaire Ananta Prasad The data shows the residuals, which are the differences between the actual fuel efficiency and the fuel efficiency predicted by the model. Each car in the dataset has a residual value. For example, the Mazda RX4 and Mazda RX4 Wag have a residual of about 1.057937. A positive residual means the car did better than the model predicted, and a negative residual means it did worse. Overall, smaller residuals mean the model fits the data better.
+```{r}
+
+plot(mtcars$cyl, residuals, xlab = "Number of Cylinders", ylab = "Residuals")
+abline(h = 0, col = "green")
+```
+M24W0272 Gaire Ananta Prasad The plot shows how the number of cylinders in cars relates to their residuals (the difference between actual and predicted values). The green line at y = 0 shows where predictions would be perfect. If the dots are scattered randomly around the line, it means the model is doing well. But if there are clear patterns or dots far from the line, it means the model could be improved.
+```{r}
+predicted <- ifelse(predict(model, type = "response") > 0.5, 1, 0)
+predicted
+```
+M24W0272 Gaire Ananta Prasad  The data shows how cars are classified as either high or low MPG based on a 0.5 cutoff. If a car’s predicted chance of high MPG is more than 0.5, it’s labeled as 1 (high MPG); if not, it’s labeled as 0 (low MPG). For example, the Mazda RX4, Mazda RX4 Wag, and Datsun 710 are predicted to have high MPG, while the Hornet Sportabout, Duster 360, and Merc 450SL are predicted to have low MPG. These results are based on the model’s guess using the number of cylinders.
+
+
+```{r}
+actual <- mtcars$high_mpg
+confusion_matrix <- table(Predicted = predicted, Actual = actual)
+confusion_matrix
+
+```
+M24W0272 Gaire Ananta Prasad  The code creates a confusion matrix that compares the model’s predictions about car MPG (high or low) to the actual values. The matrix has two rows for the predicted classes and two columns for the actual classes. It shows:
+
+14 cars were correctly predicted as low MPG.
+
+15 cars were correctly predicted as high MPG.
+
+3 cars were wrongly predicted as low MPG when they were actually high MPG.
+
+0 cars were wrongly predicted as high MPG when they were actually low MPG.
+
+```{r}
+accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+accuracy
+```
+Gaire Ananta Prasad M24W0272  This code checks how often the model makes correct predictions. It uses a confusion matrix to count the right and wrong guesses. Then, it calculates accuracy by dividing the number of correct guesses by the total number of guesses. The result, 0.90625, means the model is correct about 90.625% of the time when predicting if a car has high or low MPG.
